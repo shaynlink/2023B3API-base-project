@@ -48,14 +48,4 @@ export class ProjectUsersController {
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.projectUsersService.findOne(id);
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateProjectUserDto: UpdateProjectUserDto) {
-  //   return this.projectUsersService.update(+id, updateProjectUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.projectUsersService.remove(+id);
-  // }
 }
