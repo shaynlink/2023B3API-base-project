@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, FindManyOptions, Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import {
   Ranges,
@@ -75,8 +75,11 @@ export class EventsService {
     }
   }
 
-  findAll(): Promise<Event[]> {
-    return this.eventsRepository.find();
+  findAll(findOpt?: FindManyOptions<Event>): Promise<Event[]> {
+    if (!findOpt) {
+      findOpt = {};
+    }
+    return this.eventsRepository.find(findOpt);
   }
 
   findOne(id: string): Promise<Event> {

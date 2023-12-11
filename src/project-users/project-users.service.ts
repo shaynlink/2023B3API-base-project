@@ -18,7 +18,6 @@ import { CreateProjectUserDto } from './dto/project-user.dto';
 import { UsersService } from '../users/users.service';
 import { ProjectsService } from '../projects/projects.service';
 import { Ranges, hasDateRangeOverlaps } from '../utils';
-import { Project } from '../projects/entities/project.entity';
 import { Role, RoleEnum } from '../types/generic';
 
 @Injectable()
@@ -104,23 +103,22 @@ export class ProjectUsersService {
     });
   }
 
-  public findAll(userId: string, role: Role): Promise<Project[]> {
-    const findOpt: FindManyOptions<ProjectUser> = {
-      relations: {
-        project: true,
-      },
-    };
+  public findAll(userId: string, role: Role): Promise<ProjectUser[]> {
+    const findOpt: FindManyOptions<ProjectUser> = {};
 
     if (role === RoleEnum.Employee) {
       findOpt.where = { userId };
     }
 
-    return this.projectUsersRepository
-      .find(findOpt)
-      .then((projectUsers) => projectUsers.map(({ project }) => project))
-      .catch(() => {
-        return [];
-      });
+    return this.projectUsersRepository.find(findOpt).catch(() => {
+      return [];
+    });
+  }
+
+  public findOneWithFindOptions(
+    findOpt: FindManyOptions<ProjectUser>,
+  ): Promise<ProjectUser> {
+    return this.projectUsersRepository.findOne(findOpt);
   }
 
   public async findOne(id: string): Promise<ProjectUser> {

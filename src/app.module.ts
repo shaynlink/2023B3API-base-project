@@ -3,17 +3,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users/users.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Modules
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ProjectUsersModule } from './project-users/project-users.module';
+import { EventsModule } from './events/events.module';
+import { TasksModule } from './tasks/tasks.module';
 
 // Entities
 import { User } from './users/entities/user.entity';
 import { Project } from './projects/entities/project.entity';
 import { ProjectUser } from './project-users/entities/project-user.entity';
-import { EventsModule } from './events/events.module';
 import { Event } from './events/entities/event.entity';
 
 @Module({
@@ -33,6 +35,8 @@ import { Event } from './events/entities/event.entity';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
+    TasksModule,
     UsersModule,
     ProjectsModule,
     ProjectUsersModule,
