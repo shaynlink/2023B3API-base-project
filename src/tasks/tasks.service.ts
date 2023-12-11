@@ -34,6 +34,10 @@ export class TasksService {
             dayjs().endOf('month').toDate(),
           ),
         },
+        select: {
+          date: true,
+          userId: true,
+        },
       })
       .then(async (events) => {
         return Promise.all(
