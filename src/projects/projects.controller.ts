@@ -5,25 +5,25 @@ import {
   Post,
   Body,
   Req,
-  HttpStatus,
   UnauthorizedException,
-  HttpCode,
   UseGuards,
   UsePipes,
   ValidationPipe,
   ParseUUIDPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/project.dto';
 import { JwtAuthGuard } from '../jwt-auth.guard';
 import { RoleEnum } from '../types/generic';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @Controller('projects')
+@UseInterceptors(new LoggingInterceptor())
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
-  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
   @Post()
   create(@Req() req, @Body() createProjectDto: CreateProjectDto) {
@@ -36,7 +36,6 @@ export class ProjectsController {
     return this.projectsService.create(createProjectDto);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get()
   findAll(@Req() req) {
     const { role, userId } = req.user;
@@ -44,7 +43,6 @@ export class ProjectsController {
     return this.projectsService.findAll(role, userId);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get(':id')
   findOne(@Req() req, @Param('id', new ParseUUIDPipe()) projectId: string) {
     const { userId, role } = req.user;

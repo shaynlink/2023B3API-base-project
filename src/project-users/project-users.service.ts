@@ -1,8 +1,9 @@
 import {
-  HttpException,
-  HttpStatus,
+  ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
+  NotFoundException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -68,9 +69,8 @@ export class ProjectUsersService {
     const hasConflictWithDateRangeOverlaps = hasDateRangeOverlaps(rangesDate);
 
     if (hasConflictWithDateRangeOverlaps) {
-      throw new HttpException(
+      throw new ConflictException(
         'Project already assigned to user in this date range',
-        HttpStatus.CONFLICT,
       );
     }
 
@@ -88,10 +88,7 @@ export class ProjectUsersService {
 
       return projectUserSaved;
     } catch (e) {
-      throw new HttpException(
-        (<Error>e).message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException((<Error>e).message);
     }
   }
 
@@ -132,7 +129,7 @@ export class ProjectUsersService {
     });
 
     if (!projectUser) {
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Project not found');
     }
 
     return projectUser;
@@ -147,7 +144,7 @@ export class ProjectUsersService {
     });
 
     if (!projectUsers) {
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Project not found');
     }
 
     return projectUsers;

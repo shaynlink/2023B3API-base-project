@@ -1,10 +1,11 @@
 import {
   Injectable,
-  HttpStatus,
-  HttpException,
   Inject,
   forwardRef,
   ForbiddenException,
+  UnauthorizedException,
+  InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
@@ -31,9 +32,8 @@ export class ProjectsService {
     );
 
     if (referringEmployee.role === RoleEnum.Employee) {
-      throw new HttpException(
+      throw new UnauthorizedException(
         'Referring employee must be an Admin or Project Manager',
-        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -49,10 +49,7 @@ export class ProjectsService {
 
       return projectSaved;
     } catch (e) {
-      throw new HttpException(
-        (<Error>e).message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException((<Error>e).message);
     }
   }
 
@@ -118,7 +115,7 @@ export class ProjectsService {
     const project = await this.projectsRepository.findOne(findOpt);
 
     if (!project) {
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Project not found');
     }
 
     return project;

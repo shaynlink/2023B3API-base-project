@@ -4,21 +4,22 @@ import {
   Post,
   Param,
   Body,
-  HttpCode,
-  HttpStatus,
   UseGuards,
   UsePipes,
   ValidationPipe,
   ParseUUIDPipe,
   Req,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProjectUsersService } from './project-users.service';
 import { JwtAuthGuard } from '../jwt-auth.guard';
 import { CreateProjectUserDto } from './dto/project-user.dto';
 import { RoleEnum } from '../types/generic';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @Controller('project-users')
+@UseInterceptors(new LoggingInterceptor())
 @UseGuards(JwtAuthGuard)
 export class ProjectUsersController {
   constructor(private readonly projectUsersService: ProjectUsersService) {}
@@ -35,7 +36,6 @@ export class ProjectUsersController {
     return this.projectUsersService.create(createProjectUserDto, userId, role);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get()
   findAll(@Req() req) {
     const { userId, role } = req.user;
@@ -43,7 +43,6 @@ export class ProjectUsersController {
     return this.projectUsersService.findAll(userId, role);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Get(':id')
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.projectUsersService.findOne(id);

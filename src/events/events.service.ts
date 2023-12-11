@@ -1,9 +1,10 @@
 import {
-  HttpException,
-  HttpStatus,
   Injectable,
   forwardRef,
   Inject,
+  UnauthorizedException,
+  InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -45,16 +46,14 @@ export class EventsService {
     dates.push(new Date(createEventDto.date));
 
     if (hasSameDate(dates)) {
-      throw new HttpException(
+      throw new UnauthorizedException(
         'You can not have more than 1 event per day',
-        HttpStatus.UNAUTHORIZED,
       );
     }
 
     if (hasMoreThanPerWeek(2, dates)) {
-      throw new HttpException(
+      throw new UnauthorizedException(
         'You can not have more than 5 events per week',
-        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -72,10 +71,7 @@ export class EventsService {
 
       return eventSaved;
     } catch (e) {
-      throw new HttpException(
-        (<Error>e).message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException((<Error>e).message);
     }
   }
 
@@ -93,7 +89,6 @@ export class EventsService {
     userId: string,
     { month }: { month: number },
   ): Promise<Event[]> {
-    // get start date of month from month string
     const startDate = dayjs()
       .month(month - 1)
       .startOf('month');
@@ -118,14 +113,11 @@ export class EventsService {
     });
 
     if (!event) {
-      throw new HttpException('Event not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Event not found');
     }
 
     if (event.eventStatus !== EventStatusEnum.Pending) {
-      throw new HttpException(
-        'You can not validate this event',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException('You can not validate this event');
     }
 
     const projectUsers = await this.projectUsersService.getProjectByUser(
@@ -138,9 +130,8 @@ export class EventsService {
     ]);
 
     if (!dateIncludeFromRanges(event.date, rangesDate)) {
-      throw new HttpException(
+      throw new UnauthorizedException(
         'You can not validate this event, must be in project range',
-        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -152,10 +143,7 @@ export class EventsService {
         );
 
       if (!project) {
-        throw new HttpException(
-          'You can not validate this event',
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new UnauthorizedException('You can not validate this event');
       }
     }
 
@@ -169,10 +157,7 @@ export class EventsService {
 
       return eventSaved;
     } catch (e) {
-      throw new HttpException(
-        (<Error>e).message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException((<Error>e).message);
     }
   }
 }

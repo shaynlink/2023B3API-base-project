@@ -3,32 +3,31 @@ import {
   Get,
   Post,
   Body,
-  HttpCode,
-  HttpStatus,
   Param,
   UseGuards,
   Req,
   UsePipes,
   ValidationPipe,
   ParseUUIDPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignUpDto, LoginDto } from './dto/users.dto';
 import { LoginData, SignUpData } from '../types/response';
 import { JwtAuthGuard } from '../jwt-auth.guard';
+import { LoggingInterceptor } from '../logging.interceptor';
 
 @Controller('users')
+@UseInterceptors(new LoggingInterceptor())
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
   @Post('auth/sign-up')
   signUp(@Body() signUpDto: SignUpDto): Promise<SignUpData> {
     return this.usersService.signUp(signUpDto);
   }
 
-  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
   @Post('auth/login')
   async logIn(@Body() logInDto: LoginDto): Promise<LoginData> {
@@ -43,21 +42,18 @@ export class UsersController {
     return this.usersService.findOneById(userId);
   }
 
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findOneById(id);
   }
 
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Get(':id/meal-vouchers/:month')
   getMealVouchers(@Param('month') month: string, @Req() req) {

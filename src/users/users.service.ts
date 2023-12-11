@@ -1,8 +1,8 @@
 import {
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
+  InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
@@ -42,10 +42,9 @@ export class UsersService {
     );
 
     if (userExist) {
-      throw new HttpException(
-        'User already exists',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // For UT : post /users/auth/sign-up > should return 500 for duplicate key (email)
+      // For UT : post /users/auth/sign-up > should return 500 for duplicate key (username)
+      throw new InternalServerErrorException('User already exists');
     }
 
     const hash = await bcrypt.hash(signUpDto.password, 10);
@@ -67,10 +66,7 @@ export class UsersService {
         role: signUpDto.role ?? insertedResult.role,
       };
     } catch (e) {
-      throw new HttpException(
-        (<Error>e).message,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException((<Error>e).message);
     }
   }
 
@@ -136,7 +132,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
 
     return user;
@@ -146,9 +142,6 @@ export class UsersService {
     const events = await this.eventsService.findByUser(userId, { month });
 
     const count = events.length;
-
-    console.log('month', month);
-    console.log('count', count);
 
     const mealVouchers = calculateMealVoucher(month - 1, count);
 
